@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "video-prompt-gen"
+version = "0.1.0"
+description = "CLI for generating prompts for AI video generation models (Seedance 2.0, etc.)."
+requires-python = ">=3.10"
+dependencies = [
+    "anthropic>=0.50",
+    "questionary>=2.0",
+]
+
+[project.scripts]
+vpg = "video_prompt_gen.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
