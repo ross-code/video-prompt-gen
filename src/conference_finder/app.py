@@ -44,10 +44,13 @@ def create_app() -> Flask:
 
         try:
             conferences = find_conferences(profile, months=months)
+            last_updated = save_state(profile.to_dict(), conferences)
         except FinderError as exc:
             return jsonify(error=str(exc)), 400
+        except Exception as exc:  # never return an HTML 500 page to a JSON client
+            app.logger.exception("Unexpected error during /api/refresh")
+            return jsonify(error=f"Unexpected error: {exc}"), 500
 
-        last_updated = save_state(profile.to_dict(), conferences)
         return jsonify(conferences=conferences, last_updated=last_updated, months=months)
 
     return app

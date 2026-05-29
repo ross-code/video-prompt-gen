@@ -195,6 +195,14 @@ def find_conferences(profile: Profile, months: int = 6) -> list[dict]:
         raise FinderError("Rate limited by the API. Wait a moment and refresh again.") from exc
     except anthropic.APIError as exc:
         raise FinderError(f"API error while searching: {exc}") from exc
+    except TypeError as exc:
+        # An unknown-keyword TypeError almost always means the installed SDK is
+        # too old for the features this app uses (output_config, adaptive
+        # thinking, the web_search tool).
+        raise FinderError(
+            f"Your Anthropic SDK looks outdated for this app ({exc}). "
+            "Upgrade it with: pip install -U anthropic"
+        ) from exc
 
     if response is None:
         raise FinderError("No response from the model. Try again.")
