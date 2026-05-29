@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 
 from flask import Flask, jsonify, render_template, request
+from werkzeug.exceptions import HTTPException
 
 from .finder import FinderError, Profile, find_conferences
 from .storage import load_state, save_state
@@ -12,6 +13,20 @@ from .storage import load_state, save_state
 
 def create_app() -> Flask:
     app = Flask(__name__)
+
+    @app.errorhandler(Exception)
+    def handle_any_error(exc):
+        """Guarantee /api/* always answers with JSON, never an HTML error page."""
+        code = exc.code if isinstance(exc, HTTPException) else 500
+        if request.path.startswith("/api/"):
+            if code == 500:
+                app.logger.exception("Unhandled error on %s", request.path)
+            return jsonify(error=str(exc)), code
+        # Non-API routes keep Flask's default pages with the correct status.
+        if isinstance(exc, HTTPException):
+            return exc
+        app.logger.exception("Unhandled error on %s", request.path)
+        raise exc
 
     @app.get("/")
     def index():
