@@ -8,12 +8,14 @@ version = "0.1.0"
 description = "CLI for generating prompts for AI video generation models (Seedance 2.0, etc.)."
 requires-python = ">=3.10"
 dependencies = [
-    "anthropic>=0.50",
+    "anthropic>=0.105",
     "questionary>=2.0",
+    "flask>=3.0",
 ]
 
 [project.scripts]
 vpg = "video_prompt_gen.cli:main"
+conference-finder = "conference_finder.app:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

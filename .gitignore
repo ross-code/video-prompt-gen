@@ -32,3 +32,6 @@ htmlcov/
 .env
 .env.*
 !.env.example
+
+# Conference Finder local cache (when CONF_FINDER_DATA points into the repo)
+.conference-finder/
