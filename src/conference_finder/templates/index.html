@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Conference Finder</title>
+<style>
+  :root {
+    --ink: #14181f;
+    --panel: #1c222c;
+    --panel-2: #232b37;
+    --line: #303a48;
+    --text: #e7ebf0;
+    --muted: #98a3b3;
+    --accent: #ff6b4a;
+    --accent-soft: #ff6b4a22;
+    --good: #5bd6a6;
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: radial-gradient(1200px 600px at 80% -10%, #20283400, #20283455), var(--ink);
+    color: var(--text);
+    font: 16px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 40px 22px 80px; }
+  header h1 {
+    margin: 0 0 6px;
+    font-size: 30px;
+    letter-spacing: -0.02em;
+  }
+  header h1 .dot { color: var(--accent); }
+  header p { margin: 0; color: var(--muted); max-width: 60ch; }
+
+  form {
+    margin: 28px 0 8px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 22px;
+  }
+  .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  @media (max-width: 760px) { .grid { grid-template-columns: 1fr; } }
+  label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  input, textarea, select {
+    width: 100%;
+    background: var(--ink);
+    border: 1px solid var(--line);
+    color: var(--text);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font: inherit;
+    resize: vertical;
+  }
+  input:focus, textarea:focus, select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+  .row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin-top: 18px;
+    flex-wrap: wrap;
+  }
+  .controls { display: flex; align-items: center; gap: 12px; }
+  .controls .field { display: flex; align-items: center; gap: 8px; }
+  .controls select { width: auto; }
+  button {
+    background: var(--accent);
+    color: #1a0e0a;
+    border: none;
+    border-radius: 10px;
+    padding: 11px 20px;
+    font-weight: 650;
+    font-size: 15px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+  }
+  button:hover { filter: brightness(1.06); }
+  button:disabled { opacity: 0.55; cursor: progress; }
+  .spinner {
+    width: 15px; height: 15px;
+    border: 2px solid #1a0e0a55;
+    border-top-color: #1a0e0a;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .status { margin: 16px 2px 0; min-height: 20px; font-size: 14px; color: var(--muted); }
+  .status.error { color: var(--accent); }
+
+  .meta { margin: 30px 2px 14px; display: flex; align-items: baseline; gap: 10px; }
+  .meta h2 { margin: 0; font-size: 18px; }
+  .meta .count { color: var(--muted); font-size: 14px; }
+  .meta .updated { margin-left: auto; color: var(--muted); font-size: 13px; }
+
+  .cards { display: grid; gap: 16px; }
+  .card {
+    background: linear-gradient(180deg, var(--panel-2), var(--panel));
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 20px;
+  }
+  .card .top { display: flex; justify-content: space-between; gap: 16px; align-items: flex-start; }
+  .card h3 { margin: 0 0 4px; font-size: 19px; letter-spacing: -0.01em; }
+  .card h3 a { color: var(--text); text-decoration: none; }
+  .card h3 a:hover { color: var(--accent); }
+  .when {
+    white-space: nowrap;
+    color: var(--accent);
+    font-weight: 650;
+    font-size: 14px;
+    text-align: right;
+  }
+  .when small { display: block; color: var(--muted); font-weight: 400; }
+  .where { color: var(--muted); font-size: 14px; margin: 2px 0 12px; }
+  .where .fmt {
+    display: inline-block;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 1px 9px;
+    margin-left: 8px;
+    font-size: 12px;
+    text-transform: capitalize;
+  }
+  .desc { margin: 0 0 12px; }
+  .relevance {
+    background: var(--accent-soft);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    padding: 9px 12px;
+    font-size: 14px;
+    color: #ffd9cf;
+    margin-bottom: 12px;
+  }
+  .relevance b { color: var(--accent); }
+  .tags { display: flex; flex-wrap: wrap; gap: 7px; }
+  .tag {
+    background: var(--ink);
+    border: 1px solid var(--line);
+    color: var(--muted);
+    border-radius: 999px;
+    padding: 3px 10px;
+    font-size: 12px;
+  }
+  .foot { margin-top: 12px; color: var(--muted); font-size: 13px; display: flex; gap: 16px; flex-wrap: wrap; }
+  .empty { color: var(--muted); padding: 30px 4px; text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Conference Finder<span class="dot">.</span></h1>
+    <p>Describe your business and pull a tailored list of real, upcoming industry
+       conferences worth your time. Hit refresh whenever you want a fresh sweep.</p>
+  </header>
+
+  <form id="profile-form" autocomplete="off">
+    <div class="grid">
+      <div>
+        <label for="industry">Your industry</label>
+        <input id="industry" name="industry" placeholder="e.g. Logistics & supply chain"
+               value="{{ profile.industry or '' }}">
+      </div>
+      <div>
+        <label for="niche">Your niche / specialty</label>
+        <input id="niche" name="niche" placeholder="e.g. Cold-chain monitoring for pharma"
+               value="{{ profile.niche or '' }}">
+      </div>
+      <div>
+        <label for="selling">What you're selling</label>
+        <input id="selling" name="selling" placeholder="e.g. IoT temperature sensors + SaaS"
+               value="{{ profile.selling or '' }}">
+      </div>
+    </div>
+    <div class="row">
+      <div class="controls">
+        <div class="field">
+          <label for="months" style="margin:0">Window</label>
+          <select id="months" name="months">
+            <option value="3">Next 3 months</option>
+            <option value="6" selected>Next 6 months</option>
+            <option value="9">Next 9 months</option>
+            <option value="12">Next 12 months</option>
+          </select>
+        </div>
+      </div>
+      <button id="refresh-btn" type="submit">
+        <span id="btn-label">Find conferences</span>
+      </button>
+    </div>
+    <div id="status" class="status"></div>
+  </form>
+
+  <div class="meta" id="meta" style="display:none">
+    <h2>Conferences</h2>
+    <span class="count" id="count"></span>
+    <span class="updated" id="updated"></span>
+  </div>
+
+  <div class="cards" id="cards"></div>
+</div>
+
+<script>
+  const initial = {
+    conferences: {{ conferences | tojson }},
+    last_updated: {{ last_updated | tojson }},
+  };
+
+  const form = document.getElementById('profile-form');
+  const btn = document.getElementById('refresh-btn');
+  const btnLabel = document.getElementById('btn-label');
+  const statusEl = document.getElementById('status');
+  const cardsEl = document.getElementById('cards');
+  const metaEl = document.getElementById('meta');
+  const countEl = document.getElementById('count');
+  const updatedEl = document.getElementById('updated');
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c =>
+      ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function fmtDate(s) {
+    if (!s) return '';
+    const d = new Date(s + 'T00:00:00');
+    if (isNaN(d)) return esc(s);
+    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  function dateRange(c) {
+    const start = fmtDate(c.start_date);
+    const end = c.end_date && c.end_date !== c.start_date ? fmtDate(c.end_date) : '';
+    if (start && end) return `${start}<small>to ${end}</small>`;
+    return start || '<small>Date TBA</small>';
+  }
+
+  function card(c) {
+    const name = esc(c.name || 'Untitled event');
+    const title = c.url
+      ? `<a href="${esc(c.url)}" target="_blank" rel="noopener noreferrer">${name} ↗</a>`
+      : name;
+    const tags = (Array.isArray(c.topics) ? c.topics : [])
+      .map(t => `<span class="tag">${esc(t)}</span>`).join('');
+    const foot = [];
+    if (c.audience) foot.push(`<span>👥 ${esc(c.audience)}</span>`);
+    if (c.estimated_attendees) foot.push(`<span>📊 ${esc(c.estimated_attendees)}</span>`);
+    return `
+      <article class="card">
+        <div class="top">
+          <div>
+            <h3>${title}</h3>
+            <div class="where">${esc(c.location || 'Location TBA')}
+              ${c.format ? `<span class="fmt">${esc(c.format)}</span>` : ''}</div>
+          </div>
+          <div class="when">${dateRange(c)}</div>
+        </div>
+        ${c.description ? `<p class="desc">${esc(c.description)}</p>` : ''}
+        ${c.relevance ? `<div class="relevance"><b>Why it fits:</b> ${esc(c.relevance)}</div>` : ''}
+        ${tags ? `<div class="tags">${tags}</div>` : ''}
+        ${foot.length ? `<div class="foot">${foot.join('')}</div>` : ''}
+      </article>`;
+  }
+
+  function render(conferences, lastUpdated) {
+    if (!conferences || !conferences.length) {
+      metaEl.style.display = 'none';
+      cardsEl.innerHTML = '<div class="empty">No conferences yet — fill in your details and hit “Find conferences”.</div>';
+      return;
+    }
+    metaEl.style.display = 'flex';
+    countEl.textContent = `${conferences.length} match${conferences.length === 1 ? '' : 'es'}`;
+    updatedEl.textContent = lastUpdated
+      ? 'Updated ' + new Date(lastUpdated).toLocaleString()
+      : '';
+    cardsEl.innerHTML = conferences.map(card).join('');
+  }
+
+  let busy = false;
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (busy) return;
+    busy = true;
+    btn.disabled = true;
+    btnLabel.textContent = 'Searching the web…';
+    btn.insertAdjacentHTML('afterbegin', '<span class="spinner"></span>');
+    statusEl.className = 'status';
+    statusEl.textContent = 'Researching real conferences for your niche — this can take up to a minute.';
+
+    const body = {
+      industry: document.getElementById('industry').value,
+      niche: document.getElementById('niche').value,
+      selling: document.getElementById('selling').value,
+      months: parseInt(document.getElementById('months').value, 10),
+    };
+
+    try {
+      const res = await fetch('/api/refresh', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Something went wrong.');
+      render(data.conferences, data.last_updated);
+      statusEl.className = 'status';
+      statusEl.textContent = `Found ${data.conferences.length} conference${data.conferences.length === 1 ? '' : 's'}.`;
+    } catch (err) {
+      statusEl.className = 'status error';
+      statusEl.textContent = err.message;
+    } finally {
+      busy = false;
+      btn.disabled = false;
+      const sp = btn.querySelector('.spinner');
+      if (sp) sp.remove();
+      btnLabel.textContent = 'Refresh';
+    }
+  });
+
+  render(initial.conferences, initial.last_updated);
+  if (initial.conferences && initial.conferences.length) {
+    btnLabel.textContent = 'Refresh';
+  }
+</script>
+</body>
+</html>
