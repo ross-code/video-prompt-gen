@@ -45,7 +45,12 @@ export ANTHROPIC_API_KEY=sk-ant-...
 conference-finder
 ```
 
-Then open http://127.0.0.1:5000.
+Then open http://127.0.0.1:5050.
+
+> **macOS note:** the app defaults to port **5050** because macOS uses port 5000
+> for its AirPlay Receiver. If you force `PORT=5000` you'll hit AirPlay (an
+> `AirTunes` 403/HTML response) instead of this app. Pick any free port with
+> `PORT=5060 conference-finder` if 5050 is taken too.
 
 Fill in your details, pick a time window (default: next 6 months), and hit
 **Find conferences**. For each event you get the dates, location, format, a
@@ -68,6 +73,6 @@ the official site. Click **Refresh** to research again.
 | --- | --- | --- |
 | `ANTHROPIC_API_KEY` | — | Required. Your Anthropic API key. |
 | `HOST` | `127.0.0.1` | Bind address for the web server. |
-| `PORT` | `5000` | Port for the web server. |
+| `PORT` | `5050` | Port for the web server (avoids the macOS AirPlay conflict on 5000). |
 | `CONF_FINDER_DATA` | `~/.conference-finder` | Where the profile + results are cached. |
 | `FLASK_DEBUG` | off | Set to `1` to enable Flask debug mode. |

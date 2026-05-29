@@ -74,12 +74,21 @@ def create_app() -> Flask:
 def main() -> None:
     app = create_app()
     host = os.environ.get("HOST", "127.0.0.1")
-    port = int(os.environ.get("PORT", "5000"))
+    # Default to 5050, not 5000: macOS uses port 5000 for the AirPlay Receiver,
+    # which silently intercepts requests and returns HTML/403.
+    port = int(os.environ.get("PORT", "5050"))
     debug = os.environ.get("FLASK_DEBUG", "").lower() in {"1", "true", "yes"}
     print(f"Conference Finder running at http://{host}:{port}")
     if not os.environ.get("ANTHROPIC_API_KEY"):
         print("  Warning: ANTHROPIC_API_KEY is not set — refresh will fail until you set it.")
-    app.run(host=host, port=port, debug=debug)
+    try:
+        app.run(host=host, port=port, debug=debug)
+    except OSError as exc:
+        raise SystemExit(
+            f"Could not start on port {port}: {exc}\n"
+            f"Another program is using that port. Start on a different one with:\n"
+            f"    PORT=5060 conference-finder"
+        )
 
 
 if __name__ == "__main__":
